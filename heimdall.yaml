@@ -1,0 +1,66 @@
+apiVersion: apps/v1
+kind: StatefulSet
+metadata:
+  name: heimdall
+  namespace: media
+  labels:
+    app: heimdall
+spec:
+  serviceName: heimdall
+  replicas: 1
+  selector:
+    matchLabels:
+      app: heimdall
+  template:
+    metadata:
+      labels:
+        app: heimdall
+    spec:
+      containers:
+      - name: heimdall
+        image: linuxserver/heimdall:amd64-2.1.13-ls45
+        imagePullPolicy: IfNotPresent
+        resources:
+          limits:
+            memory: 128Mi
+          requests:
+            cpu: 100m
+            memory: 70Mi
+        volumeMounts:
+        - name: config-volume
+          mountPath: /config
+        ports:
+        - containerPort: 80
+          name: http
+          protocol: TCP
+        livenessProbe:
+          httpGet:
+            path: /
+            port: 80
+            scheme: HTTP
+          initialDelaySeconds: 60
+          timeoutSeconds: 5
+          successThreshold: 1
+          failureThreshold: 5
+      dnsPolicy: Default
+      volumes:
+        - name: config-volume
+          hostPath:
+            path: /var/lib/heimdall
+            type: DirectoryOrCreate
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: heimdall
+  namespace: media
+spec:
+  selector:
+    app: heimdall
+  ports:
+  - name: http
+    port: 80
+    targetPort: 80
+    protocol: TCP
+  externalIPs:
+  - 10.1.10.210
