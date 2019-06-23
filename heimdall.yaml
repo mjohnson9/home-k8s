@@ -60,5 +60,18 @@ spec:
   ports:
   - name: http
     port: 80
-    targetPort: 80
-    protocol: TCP
+---
+apiVersion: extensions/v1beta1
+kind: Ingress
+metadata:
+  name: heimdall-web-ui
+  namespace: media
+spec:
+  rules:
+  - host: home.lan
+    http:
+      paths:
+      - path: /
+        backend:
+          serviceName: heimdall
+          servicePort: http
