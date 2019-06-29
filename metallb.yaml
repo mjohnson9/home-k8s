@@ -126,7 +126,7 @@ data:
     - name: default
       protocol: layer2
       addresses:
-      - 10.1.10.210-10.1.10.249
+      - 10.1.20.210-10.1.20.249
 ---
 apiVersion: apps/v1beta2
 kind: DaemonSet

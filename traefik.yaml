@@ -75,6 +75,7 @@ spec:
         - --api
         - --kubernetes
         - --logLevel=INFO
+        - --insecureskipverify
 ---
 kind: Service
 apiVersion: v1
@@ -88,4 +89,5 @@ spec:
     - protocol: TCP
       port: 80
       name: http
-  type: NodePort
+  loadBalancerIP: 10.1.20.210
+  type: LoadBalancer
