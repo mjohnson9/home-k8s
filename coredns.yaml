@@ -53,7 +53,6 @@ metadata:
 data:
   Corefile: |
     .:53 {
-        log
         errors
         health
         ready
