@@ -1,0 +1,95 @@
+---
+apiVersion: apps/v1
+kind: DaemonSet
+metadata:
+  name: netdata
+  labels:
+    app: netdata
+spec:
+  selector:
+    matchLabels:
+      app: netdata
+  template:
+    metadata:
+      labels:
+        app: netdata
+    spec:
+      containers:
+      - name: netdata-slave
+        image: d34dc3n73r/netdata-glibc:latest
+        resources:
+          limits:
+            memory: 128Mi
+          requests:
+            cpu: 100m
+            memory: 70Mi
+        securityContext:
+          capabilities:
+            add: ["SYS_PTRACE"]
+        volumeMounts:
+        - name: proc
+          mountPath: /host/proc
+        - name: sys
+          mountPath: /host/sys
+        - name: cache
+          mountPath: /var/cache/netdata
+        - name: lib
+          mountPath: /var/lib/netdata
+        - name: smart-logs
+          mountPath: /var/log/smartd
+          readOnly: true
+        - name: docker-socket
+          mountPath: /var/run/docker.sock
+          readOnly: true
+        ports:
+        - containerPort: 19999
+          name: http
+          protocol: TCP
+        livenessProbe:
+          httpGet:
+            path: /api/v1/info
+            port: 19999
+            scheme: HTTP
+          initialDelaySeconds: 60
+          timeoutSeconds: 5
+          successThreshold: 1
+          failureThreshold: 5
+      volumes:
+        - name: proc
+          hostPath:
+            path: /proc
+            type: Directory
+        - name: sys
+          hostPath:
+            path: /sys
+            type: Directory
+        - name: docker-socket
+          hostPath:
+            path: /var/run/docker.sock
+            type: Socket
+        - name: cache
+          hostPath:
+            path: /var/lib/netdata/cache
+            type: DirectoryOrCreate
+        - name: lib
+          hostPath:
+            path: /var/lib/netdata/lib
+            type: DirectoryOrCreate
+        - name: smart-logs
+          hostPath:
+            path: /var/lib/smartmontools/lib/attributelog
+            type: DirectoryOrCreate
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: netdata
+spec:
+  type: NodePort
+  externalTrafficPolicy: Local
+  selector:
+    app: netdata
+  ports:
+  - name: http
+    port: 19999
+    nodePort: 30000
