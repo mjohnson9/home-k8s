@@ -178,6 +178,8 @@ kind: Ingress
 metadata:
   name: kubernetes-dashboard
   namespace: kube-system
+  annotations:
+    nginx.ingress.kubernetes.io/backend-protocol: "HTTPS"
 spec:
   rules:
   - host: kube.home.lan
