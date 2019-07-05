@@ -1,0 +1,105 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: oauth-proxy-config
+data:
+  config: |
+    http_address = ":8080"
+
+    cookie_secret = "d9fb77eb8e0930c0e46485a94fd71749"
+
+    redirect_url = "https://login.home.johnson.computer/oauth2/callback"
+
+    email_domains = [
+      "johnson.computer"
+    ]
+
+    client_id = "***REMOVED***"
+    client_secret = "***REMOVED***"
+
+    whitelist_domains = [
+      "kubernetes.home.johnson.computer"
+    ]
+
+    cookie_domain = ".home.johnson.computer"
+
+    set_authorization_header = true
+---
+apiVersion: apps/v1
+kind: StatefulSet
+metadata:
+  name: oauth-proxy
+  labels:
+    app: oauth-proxy
+spec:
+  serviceName: oauth-proxy
+  replicas: 1
+  selector:
+    matchLabels:
+      app: oauth-proxy
+  template:
+    metadata:
+      labels:
+        app: oauth-proxy
+    spec:
+      containers:
+      - name: oauth-proxy
+        image: quay.io/pusher/oauth2_proxy
+        args:
+        - -config=/etc/oauth2_proxy.cfg
+        volumeMounts:
+          - name: config
+            mountPath: /etc/oauth2_proxy.cfg
+            subPath: config
+        ports:
+        - containerPort: 8080
+          name: http
+          protocol: TCP
+        livenessProbe:
+          httpGet:
+            path: /ping
+            port: 8080
+            scheme: HTTP
+          initialDelaySeconds: 60
+          timeoutSeconds: 5
+          successThreshold: 1
+          failureThreshold: 5
+      volumes:
+        - name: config
+          configMap:
+            name: oauth-proxy-config
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: oauth-proxy
+spec:
+  selector:
+    app: oauth-proxy
+  ports:
+  - name: http
+    port: 80
+    targetPort: 8080
+---
+apiVersion: extensions/v1beta1
+kind: Ingress
+metadata:
+  name: oauth-proxy
+  annotations:
+    kubernetes.io/ingress.class: nginx
+    nginx.ingress.kubernetes.io/whitelist-source-range: 10.0.0.0/8
+    certmanager.k8s.io/cluster-issuer: letsencrypt-prod
+    certmanager.k8s.io/acme-challenge-type: dns01
+    certmanager.k8s.io/acme-dns01-provider: route53
+spec:
+  rules:
+    - host: login.home.johnson.computer
+      http:
+        paths:
+          - backend:
+              serviceName: oauth-proxy
+              servicePort: http
+  tls:
+    - hosts:
+      - login.home.johnson.computer
+      secretName: oauth-proxy-certificate

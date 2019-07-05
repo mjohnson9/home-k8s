@@ -181,11 +181,21 @@ metadata:
   annotations:
     nginx.ingress.kubernetes.io/whitelist-source-range: 10.0.0.0/8
     nginx.ingress.kubernetes.io/backend-protocol: "HTTPS"
+    certmanager.k8s.io/cluster-issuer: letsencrypt-prod
+    certmanager.k8s.io/acme-challenge-type: dns01
+    certmanager.k8s.io/acme-dns01-provider: route53
+    nginx.ingress.kubernetes.io/auth-response-headers: Authorization
+    nginx.ingress.kubernetes.io/auth-signin: https://login.home.johnson.computer/oauth2/start?rd=http://$host$request_uri$is_args$args
+    nginx.ingress.kubernetes.io/auth-url: http://oauth-proxy.default.svc.cluster.local/oauth2/auth
 spec:
   rules:
-  - host: kube.home.lan
+  - host: kubernetes.home.johnson.computer
     http:
       paths:
         - backend:
             serviceName: kubernetes-dashboard
             servicePort: 443
+  tls:
+    - hosts:
+      - kubernetes.home.johnson.computer
+      secretName: kubernetes-certificate
