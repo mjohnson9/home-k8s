@@ -26,13 +26,12 @@ data:
     set_authorization_header = true
 ---
 apiVersion: apps/v1
-kind: StatefulSet
+kind: Deployment
 metadata:
   name: oauth-proxy
   labels:
     app: oauth-proxy
 spec:
-  serviceName: oauth-proxy
   replicas: 1
   selector:
     matchLabels:
@@ -44,7 +43,7 @@ spec:
     spec:
       containers:
       - name: oauth-proxy
-        image: quay.io/pusher/oauth2_proxy
+        image: "quay.io/pusher/oauth2_proxy:v3.2.0"
         args:
         - -config=/etc/oauth2_proxy.cfg
         volumeMounts:

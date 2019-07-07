@@ -18,7 +18,7 @@ spec:
     spec:
       containers:
       - name: heimdall
-        image: linuxserver/heimdall:amd64-2.1.13-ls45
+        image: linuxserver/heimdall:amd64-2.2.2-ls48
         imagePullPolicy: IfNotPresent
         resources:
           limits:

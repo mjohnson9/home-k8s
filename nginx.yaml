@@ -16,6 +16,12 @@ metadata:
   labels:
     app.kubernetes.io/name: ingress-nginx
     app.kubernetes.io/part-of: ingress-nginx
+data:
+  hsts: "true"
+  hsts-max-age: "0"
+  hsts-include-subdomains: "false"
+  hsts-preload: "false"
+  http-snippet: "proxy_ssl_trusted_certificate /etc/ssl/certs/local-ca.pem;"
 
 ---
 kind: ConfigMap
@@ -242,6 +248,10 @@ spec:
               containerPort: 80
             - name: https
               containerPort: 443
+          volumeMounts:
+            - name: local-ca
+              mountPath: /etc/ssl/certs/local-ca.pem
+              subPath: ca
           livenessProbe:
             failureThreshold: 3
             httpGet:
@@ -261,6 +271,10 @@ spec:
             periodSeconds: 10
             successThreshold: 1
             timeoutSeconds: 10
+      volumes:
+        - name: local-ca
+          configMap:
+            name: local-ca
 
 ---
 apiVersion: v1
