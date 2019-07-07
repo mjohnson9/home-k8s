@@ -185,7 +185,7 @@ metadata:
     certmanager.k8s.io/acme-challenge-type: dns01
     certmanager.k8s.io/acme-dns01-provider: route53
     nginx.ingress.kubernetes.io/auth-response-headers: Authorization
-    nginx.ingress.kubernetes.io/auth-signin: https://login.home.johnson.computer/oauth2/start?rd=http://$host$request_uri$is_args$args
+    nginx.ingress.kubernetes.io/auth-signin: https://login.home.johnson.computer/oauth2/start?rd=https://$host$request_uri$is_args$args
     nginx.ingress.kubernetes.io/auth-url: http://oauth-proxy.default.svc.cluster.local/oauth2/auth
 spec:
   rules:
