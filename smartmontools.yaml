@@ -9,7 +9,7 @@ data:
     account internal-relay
     host smtp-relay.default.svc.cluster.local
     port 25
-    from smartmontools@johnson.computer
+    from smartd@johnson.computer
 
     # Use internal-relay by default
     account default : internal-relay
@@ -32,7 +32,7 @@ data:
     # S/../.././02 | schedule a short Self-Test between 2-3 am every morning
     # L/../../6/03 | schedule a long Self-Test between 3-4 am every Saturday morning
     # unfortunatley you cant use /dev/disk/by-uuid/988cc439-03f4-4c86-8383-10280783345d when mounting devices into a container, so we're stuck with /dev/sda, sdb, etc.
-    /dev/sda -a -d megaraid,00 -o on -S on -s (S/../.././02|L/../../2/03) -m hostmaster@johnson.computer -M daily -M test
+    /dev/sda -a -d megaraid,00 -o on -S on -s (S/../.././02|L/../../2/03) -m hostmaster@johnson.computer -M daily
     /dev/sda -a -d megaraid,01 -o on -S on -s (S/../.././02|L/../../2/03) -m hostmaster@johnson.computer -M daily
     /dev/sda -a -d megaraid,02 -o on -S on -s (S/../.././02|L/../../2/03) -m hostmaster@johnson.computer -M daily
     #/dev/sda -a -d megaraid,03 -o on -S on -s (S/../.././02|L/../../2/03) -m hostmaster@johnson.computer -M daily
