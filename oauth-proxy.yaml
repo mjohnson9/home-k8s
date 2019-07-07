@@ -14,9 +14,6 @@ data:
       "johnson.computer"
     ]
 
-    client_id = "***REMOVED***"
-    client_secret = "***REMOVED***"
-
     whitelist_domains = [
       "kubernetes.home.johnson.computer"
     ]
@@ -46,6 +43,19 @@ spec:
         image: "quay.io/pusher/oauth2_proxy:v3.2.0"
         args:
         - -config=/etc/oauth2_proxy.cfg
+        - -client-id=$(CLIENT_ID)
+        - -client-secret=$(CLIENT_SECRET)
+        env:
+          - name: CLIENT_ID
+            valueFrom:
+              secretKeyRef:
+                name: oauth-google-kubernetes
+                key: client-id
+          - name: CLIENT_SECRET
+            valueFrom:
+              secretKeyRef:
+                name: oauth-google-kubernetes
+                key: client-secret
         volumeMounts:
           - name: config
             mountPath: /etc/oauth2_proxy.cfg
