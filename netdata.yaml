@@ -224,6 +224,9 @@ spec:
               mountPath: /var/cache/netdata
             - name: lib
               mountPath: /var/lib/netdata
+            - name: smartd-logs
+              mountPath: /var/log/smartd
+              readOnly: true
             - name: config
               mountPath: /etc/netdata/go.d/coredns.conf
               subPath: coredns
@@ -265,11 +268,14 @@ spec:
           hostPath:
             path: /var/lib/netdata/lib
             type: DirectoryOrCreate
+        - name: smartd-logs
+          hostPath:
+            path: /var/lib/smartmontools/attributelog
+            type: DirectoryOrCreate
         - name: config
           configMap:
             name: netdata-conf-slave
       dnsPolicy: ClusterFirstWithHostNet
-
 ---
 # Source: netdata/templates/statefulset.yaml
 apiVersion: apps/v1beta2

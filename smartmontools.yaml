@@ -1,0 +1,86 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: smartmontools-config-global
+  labels:
+    app: smartmontools
+data:
+  msmtprc: |
+    account internal-relay
+    host smtp-relay.default.svc.cluster.local
+    port 25
+    from smartmontools@johnson.computer
+
+    # Use internal-relay by default
+    account default : internal-relay
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: smartmontools-config-server
+  labels:
+    app: smartmontools
+data:
+  smartd: |
+    # Configuration file for smartd.
+    # -a | monitor all SMART properties
+    # -o | [ATA only] Enables SMART Automatic Offline Testing when smartd starts up and has no further effect. The valid arguments to this Directive are on and off.
+    # -m | Send a warning email to the email address ADD if the '-H', '-l', '-f', '-C', or '-O' Directives detect a failure or a new error, or if a SMART command to the disk fails.
+    # -M | modify the behavior of the smartd email warnings enabled with the '-m' email Directive. un the executable PATH instead of the default mail command, when smartd needs to send email. PATH must point to an executable binary file or script.
+    # -s | Run Self-Tests or Offline Immediate Tests, at scheduled times. A Self- or Offline Immediate Test will be run at the end of periodic device polling, if all 12 characters of the string T/MM/DD/d/HH match the extended regular expression
+    #
+    # S/../.././02 | schedule a short Self-Test between 2-3 am every morning
+    # L/../../6/03 | schedule a long Self-Test between 3-4 am every Saturday morning
+    # unfortunatley you cant use /dev/disk/by-uuid/988cc439-03f4-4c86-8383-10280783345d when mounting devices into a container, so we're stuck with /dev/sda, sdb, etc.
+    /dev/sda -a -d megaraid,00 -o on -S on -s (S/../.././02|L/../../2/03) -m hostmaster@johnson.computer -M daily -M test
+    /dev/sda -a -d megaraid,01 -o on -S on -s (S/../.././02|L/../../2/03) -m hostmaster@johnson.computer -M daily
+    /dev/sda -a -d megaraid,02 -o on -S on -s (S/../.././02|L/../../2/03) -m hostmaster@johnson.computer -M daily
+    #/dev/sda -a -d megaraid,03 -o on -S on -s (S/../.././02|L/../../2/03) -m hostmaster@johnson.computer -M daily
+    /dev/sda -a -d megaraid,04 -o on -S on -s (S/../.././02|L/../../2/03) -m hostmaster@johnson.computer -M daily
+    /dev/sda -a -d megaraid,05 -o on -S on -s (S/../.././02|L/../../2/03) -m hostmaster@johnson.computer -M daily
+    /dev/sda -a -d megaraid,06 -o on -S on -s (S/../.././02|L/../../2/03) -m hostmaster@johnson.computer -M daily
+    #/dev/sda -a -d megaraid,07 -o on -S on -s (S/../.././02|L/../../2/03) -m hostmaster@johnson.computer -M daily
+---
+# Source: netdata/templates/daemonset.yaml
+apiVersion: apps/v1
+kind: DaemonSet
+metadata:
+  name: smartmontools-server
+  labels:
+    app: smartmontools
+spec:
+  selector:
+    matchLabels:
+      app: smartmontools
+  template:
+    metadata:
+      labels:
+        app: smartmontools
+    spec:
+      nodeSelector:
+        kubernetes.io/hostname: "server.management.lan"
+      containers:
+        - name: smartmontools
+          image: "nightexcessive/smartmontools:v1.0.4"
+          securityContext:
+            privileged: true
+          volumeMounts:
+            - name: lib
+              mountPath: /var/lib/smartmontools
+            - name: config
+              mountPath: /etc/smartd.conf
+              subPath: smartd
+            - name: config-global
+              mountPath: /etc/msmtprc
+              subPath: msmtprc
+      volumes:
+        - name: lib
+          hostPath:
+            path: /var/lib/smartmontools
+            type: DirectoryOrCreate
+        - name: config
+          configMap:
+            name: smartmontools-config-server
+        - name: config-global
+          configMap:
+            name: smartmontools-config-global
