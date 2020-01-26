@@ -1,0 +1,86 @@
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: kuberos
+  labels:
+    name: kuberos
+---
+apiVersion: extensions/v1beta1
+kind: Deployment
+metadata:
+  labels:
+    app: kuberos
+  name: kuberos
+  namespace: kuberos
+spec:
+  replicas: 1
+  template:
+    metadata:
+      labels:
+        app: kuberos
+    spec:
+      containers:
+      - image: negz/kuberos:latest
+        name: kuberos
+        command: ["/kuberos", "https://accounts.google.com", "468918702595-d169vr8sv2avd44au63ecj9ps4scn7jk.apps.googleusercontent.com", "/cfg/secret", "/cfg/template"]
+        ports:
+        - name: http
+          containerPort: 10003
+        volumeMounts:
+        - name: config
+          mountPath: /cfg
+      volumes:
+      - name: config
+        configMap:
+          name: kuberos
+          items:
+          - key: template
+            path: template
+          - key: secret
+            path: secret
+---
+kind: ConfigMap
+apiVersion: v1
+metadata:
+  name: kuberos
+  namespace: kuberos
+  labels:
+    app: kuberos
+data:
+  template: |
+    apiVersion: v1
+    kind: Config
+    current-context: home
+    clusters:
+    - name: production
+      cluster:
+        certificate-authority-data: LS0tLS1CRUdJTiBDRVJUSUZJQ0FURS0tLS0tCk1JSUU5ekNDQXQrZ0F3SUJBZ0lKQVBaejQ0N3ArOTcxTUEwR0NTcUdTSWIzRFFFQkN3VUFNQkl4RURBT0JnTlYKQkFNTUIydDFZbVV0WTJFd0hoY05NVGt3TmpBNE1UUXlPREl6V2hjTk5EWXhNREkwTVRReU9ESXpXakFTTVJBdwpEZ1lEVlFRRERBZHJkV0psTFdOaE1JSUNJakFOQmdrcWhraUc5dzBCQVFFRkFBT0NBZzhBTUlJQ0NnS0NBZ0VBCnpnRHFLRmNWeWl6UGFORGxMK0RQK1d3Tkp4Q2lpNGFLNGQ1OGU2eVNYNEROWFVCVWVITE8wY2tZNEFNeG9NOFgKZlhpeEMxT1BzVTgyTGR6ejdjQnJDMFgzd2NQOWRSaENKWDNoY29TbUpLK3JQOG84QjdhUVFtVURrZk5YVHdGdQpXZVJiMGNoL0VUS3BLLy9DdTVkSUZiTnNkVFBjeUsvcHBCSjFDS3lXdTZhYlVhNzFVcWNwNGpIL3JLQjY3dzFKCnJvOGxnQXVVVko2OWFUTzVGYlhibHU1SUxMWlZrSjh6UUdzUThmem1DZEJwRlprSmVkWDFEWUxsdWhzTHI4Sm8KZmdHZ0ZoanJXYmZFYjBscnhxeEJJRzZBNHZRZEx4anBoa3UyKzI1YjNyVlYraXY0R1RUSkEvN2x1UkJUSm8xLwo5eGhGazhiZ0xncHEwVjRLSmU1eWJTbkQrYVFITXZ5Mmh6Vm5EMUdocXVQYUowNms2RnVIQytuWVMwT2xjRGlOCkM3YVpvQ1RsZEkzR3ByOWdEb2hDQkpLUE4yRDNwWURFUUQzaU43UGlYYkpQUVZZdWFYZjNUM2dEYW42R3JOUlQKTS9JYmdGOEI5UGIrV203blNQOEluMDJFWGVrRldDN3RaaHE5TkIwbmd3ZHdaQlVTSVM1L3haeW9pQ1h1NkM1OAp5R21nMVZKWndPTEtrejR6R2c3czdtOEN3ejlKZkZ6UkxxVVkxTmdUVTFQTHVUWjAvUDVwVUVPZEpudEhYUDVBCkFHSm9IUU9ibzZBMUZiVWtiL0d6SkF3TEI1VTZDZXBLUTRIOXBMQXB5TFczK3VDSmY3d040VEw5VmI3ZTdrS0QKbTZQZmJKQk54bGxJOWNQR1BaN2hLUUl1TWNRdjRzYjFPdjIxbnVmbG84VUNBd0VBQWFOUU1FNHdIUVlEVlIwTwpCQllFRkZmcjhUS21FdzVjeU5YenJyVFhNNElHaVhXM01COEdBMVVkSXdRWU1CYUFGRmZyOFRLbUV3NWN5Tlh6CnJyVFhNNElHaVhXM01Bd0dBMVVkRXdRRk1BTUJBZjh3RFFZSktvWklodmNOQVFFTEJRQURnZ0lCQUhOd3lhVk8KUFRMMFkxT0hEM3NqRnRqTjRhU2xSb1VndG9icE9FbENkUTVNQlZ0YVZVeHA4bGxDeVJpWmlsY0xCNVNGa2EyQQp6Kzg0THIwdnVGM3ZheVFMaDhvTituNHdFaUg5T1VLQ203VHdTaGh1SE9sZ1BsNnR2d3RGTnFiNXkrV2VzWWZ3CnRQZXpHRW1VcHRMck9XNGNFcTZ6OS9UakVub3pjU1d5MWF5N3BLMTEyRElXOTlUdHJNSDduWEdqODZFd25IbkEKMkJya0QxWTc3ZUVybnVKTDFNMktlREd2ZkZBSjMrbDNkUkQwbm9qTFhVaFhiY2NGRWhpWWdiN1lFYmE0Vk1QQQpDT2VXY0l1dG14RTREWTBWZlhCT3NHVGRQaldDcUlTU0cvSWlwY3p5cVNXNFN2clNLVG54NWNwRFhmazhFU01uCk1CbVAzbzZYalEvcy9HTXkvRERvMEVkVlIrWFY3RktISFpBZVdPcDVoQURIWnIxbnp3YnJubVBjZmcxQ2J1aGQKMDRhRzlvQmVva1FLTi9wT2F1TG5odGgyZVFZT3k1Yk5jWTNkYTlFZkJuTS9mMmxFQmFZRTRDRS9kOWozS2FyLwpQTHovRFRPdGFTNjlDOVRGWHdPYU9jcU5ZMWFUMCt1S3k0bnppK1ZPbTMxNXE4RnFVdWdMQnhQVE5KZzNYWnpRCmFqUHBIZTZPb3FWVFduNW9wZ1FnUXZSNGJBZElxQW8xRUZSZUN3QVZ2bk8yME42Wlo0bFlmWmREalVhM0xsb2UKVHpmc0JJbjhHcjltZldlcDFsdUU5WVVjUm9LenlWdWZ6VFlTTms5TkpkMis4ZnQ2ZWlrTm9Od1l3UU5JVFREOQp1WnZZeXE5dFRBSjFYMDJhTlJmYVR0SThJY29lN2VXT09hdloKLS0tLS1FTkQgQ0VSVElGSUNBVEUtLS0tLQo=
+        server: https://server.management.lan
+  secret: c6g7mCfXBItRDDsSG58y-VZU
+
+---
+kind: Service
+apiVersion: v1
+metadata:
+  name: kuberos
+  namespace: kuberos
+spec:
+  ports:
+    - port: 80
+      targetPort: http
+  selector:
+    app: kuberos
+---
+apiVersion: networking.k8s.io/v1beta1
+kind: Ingress
+metadata:
+  name: kuberos
+  namespace: kuberos
+spec:
+  rules:
+  - host: kubeconfig.home.lan
+    http:
+      paths:
+        - backend:
+            serviceName: kuberos
+            servicePort: 80
